@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "scalecord"
+version = "0.1.0"
+description = "An image upscaling bot for discord using PyTorch supported models from OpenModelDB."
+authors = ["Investigamer <freethoughtleft@gmail.com>"]
+license = "MPL-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+spandrel = "^0.2.1"
+torch = {version = "^2.2.0+cu121", source = "pytorch"}
+torchvision = {version = "^0.17.0+cu121", source = "pytorch"}
+discord-py = "^2.3.2"
+omnitils = {git = "https://github.com/Investigamer/omnitils.git"}
+
+[tool.poetry.group.dev.dependencies]
+commitizen = "^3.14.0"
+mypy = "^1.8.0"
+mkdocs = "^1.5.3"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu121"
+priority = "supplemental"
+
+[tool.poetry.scripts]
+scalecord = 'main:run'
+
+[tool.commitizen]
+version = "0.1.0"
+changelog_start_rev = "0.1.0"
+tag_format = "$major.$minor.$patch"
+update_changelog_on_bump = true
+version_files = [
+    "pyproject.toml:version"
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
