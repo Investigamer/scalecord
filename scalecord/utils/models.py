@@ -7,11 +7,14 @@ import json
 from pathlib import Path
 from typing import TypedDict, Optional
 
+# Third Party Imports
 import requests
+from omnitils.files import get_sha256
+from omnitils.files_data import dump_data_file, load_data_file
+from omnitils.folders import mkdir_full_perms
 
 # Local Imports
 from scalecord._constants import ENV
-from scalecord.utils.files import get_sha256, load_data_file, mkdir_full_perms
 from scalecord.utils.github import download_directory_files
 
 """
@@ -39,13 +42,21 @@ def get_all_models() -> dict:
     Returns:
         A dictionary containing all models with model name as key.
     """
-    path = ENV.CWD / '.cache' / 'models.json'
+    path = ENV.PATH_CACHE / 'models.yml'
     return load_data_file(path)
 
 
 def format_model_data(data: dict) -> dict:
     """Formats model data retrieved from OpenModelDB to reduce filesize."""
-    return data
+    result = {}
+    for k, v in data.items():
+        result[k] = {
+            'architecture': v['architecture'],
+            'resources': v['resources'],
+            'scale': v['scale'],
+            'tags': v['tags']
+        }
+    return result
 
 
 def update_model_data() -> None:
@@ -56,17 +67,16 @@ def update_model_data() -> None:
     path_models = ENV.PATH_CACHE / 'models.yml'
 
     # Cache metadata
-    download_directory_files(
-        repo=repo,
-        repo_dir='data',
-        path=ENV.PATH_CACHE,
-        token=ENV.GITHUB_ACCESS_TOKEN)
+    """    download_directory_files(
+    repo=repo,
+    repo_dir='data',
+    path=ENV.PATH_CACHE,
+    token=ENV.GITHUB_ACCESS_TOKEN)"""
 
     # Cache model data
     with requests.get('https://openmodeldb.info/api/v1/models.json') as r:
         data = format_model_data(r.json())
-        with open(path_models, 'w', encoding='utf-8') as f:
-            json.dump(data, f)
+        dump_data_file(data, path_models)
 
 
 def audit_model_data() -> dict[Path, list[dict[str, str]]]:

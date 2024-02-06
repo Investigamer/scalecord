@@ -27,11 +27,14 @@ class AppEnvironment:
         if Path(os.getcwd()) != self._path_root:
             os.chdir(self._path_root)
         self._path_env = kwargs.get(
-            'path_env', self._path_root / 'env.yml')
+            'path_env', self.PATH_CONFIG / 'env.yml')
         self._loader_config = kwargs.get(
             'loader_config', None)
-        self._env = load_data_file(
-            self._path_env, self._loader_config)
+        try:
+            self._env = load_data_file(
+                self._path_env, self._loader_config)
+        except (FileNotFoundError, OSError, ValueError):
+            self._env = {}
 
     @property
     def CWD(self) -> Path:
