@@ -1,51 +1,81 @@
+"""
+* Bot Command Groups
+"""
+# Standard Library Imports
 import os
+from itertools import islice
 from pathlib import Path
 import random
 import string
 from threading import Lock
 from time import perf_counter
 
+# Third Party Imports
 from PIL import Image
-from discord import Attachment, File, Client, app_commands
+from discord import Attachment, File, app_commands
 from discord.ext import commands
 from discord.ext.commands import Bot
 from discord.interactions import Interaction
+from omnitils.properties import default_property
 
-from scalecord._constants import models
-from scalecord._autocomplete import model_autocomplete
-from scalecord.utils.models import UpscaleModel
-from scalecord.utils.properties import auto_prop_cached
+# Local Imports
+from scalecord._constants import AppEnvironment
+from scalecord.types.models import ScalecordModel
 from scalecord.utils.upscale import upscale_image
+
+"""
+* Command Groups
+"""
 
 
 class UpscaleCog(commands.Cog):
+    """Upscaling related command group."""
+
     def __init__(self, bot):
         super().__init__()
-        self.bot: Bot = bot
-        self.client: Client = bot
+        self._bot: Bot = bot
+        self._env: AppEnvironment = bot._env
+        self._models = self._env.MODELS
+        self.upscale_attached_image = app_commands.autocomplete(
+            model_name=self.model_autocomplete
+        )(self.upscale_attached_image)
 
-    @auto_prop_cached
+    @default_property
+    def model_names(self) -> list[str]:
+        return sorted([k for k in self._models.keys()])
+
+    @default_property
     def render_lock(self) -> Lock:
         return Lock()
 
-    @commands.is_owner()
+    @commands.has_permissions(send_messages=True)
     @app_commands.command(name='upscale', description="Upscale a provided image using a chosen model.")
-    @app_commands.autocomplete(model_name=model_autocomplete)
     async def upscale_attached_image(self, ctx: type(Interaction), model_name: str, image: Attachment):
 
         # Load the selected model
-        model: UpscaleModel = models.get(model_name)
+        model: ScalecordModel = self._models.get(model_name)
         if not model:
             return await ctx.response.send_message(
                 f'Sorry {ctx.user.mention}, I couldn\'t find a model named "{model_name}"!')
+
+        # Establish model display info
+        display_name = f"`[{model['scale']}X] {model['name']}`"
+        display_arch = f"`{self._env.ARCHITECTURES[model['architecture']]}`"
+        display_tags = ', '.join([
+            f'`{self._env.TAGS[n]['name']}`' for n in model['tags']
+        ])
+
+        # Alert the user upscale is starting
         await ctx.response.send_message(
-            f"Request received {ctx.user.mention}!\n"
-            f"Upscaling now, using model: `{model_name}`")
+            f"I'm upscaling your image {ctx.user.mention}!\n"
+            f"> **Model**: {display_name}\n"
+            f"> **Tags**: {display_tags}\n"
+            f"> **Architecture**: {display_arch}\n")
 
         # Load the image from the attachment
-        image_in = Path(os.getcwd(), 'img', ''.join(random.choice(string.ascii_lowercase) for _ in range(16)))
-        image_in = image_in.with_suffix(Path(image.filename).suffix)
-        image_out = Path(os.getcwd(), 'out', image_in.name)
+        rand_name = ''.join(random.choice(string.ascii_lowercase) for _ in range(16))
+        image_in = Path(self._env.PATH_CACHE_IN, rand_name).with_suffix(Path(image.filename).suffix)
+        image_out = Path(self._env.PATH_CACHE_OUT, image_in.name)
         await image.save(image_in)
 
         # Upscale and save the upscaled image
@@ -61,9 +91,39 @@ class UpscaleCog(commands.Cog):
 
         # Send the message, with the image attached
         await ctx.edit_original_response(
-            content=f"Here you go, {ctx.user.mention}!\n"
-                    f"**Upscale time:** `{time_completed}s`\n"
-                    f"**Model used:** `{model_name}`\n"
-                    f"**Dimensions:** `{dims_before}` **->** `{dims_after}`\n",
+            content=f"That took me **{time_completed}** seconds!\n"
+                    f"> **Model:** {display_name}\n"
+                    f"> **Tags:** {display_tags}\n"
+                    f"> **Dimensions:** `{dims_before}` **->** `{dims_after}`\n"
+                    f"> **Architecture:** {display_arch}\n",
             attachments=[File(image_out)])
         os.remove(image_out)
+
+    """
+    * Autocomplete Methods
+    """
+
+    async def model_autocomplete(self, _ctx: Interaction, current: str) -> list[app_commands.Choice[str]]:
+        """Provides autocomplete results for model names.
+
+        Args:
+            _ctx: Context of the command interaction.
+            current: The current string entered by the user for this command.
+
+        Returns:
+            Model choices the user can make.
+        """
+        # Generate a token list
+        tokens = [t for t in current.lower().split(' ') if t] if current else []
+
+        # If tokens provided, return top 25 matches
+        if tokens:
+            return list(islice(
+                (
+                    app_commands.Choice(name=n, value=n) for n in self.model_names
+                    if all([bool(t in n.lower()) for t in tokens])
+                ), 25
+            ))
+
+        # Return first 25 models
+        return [app_commands.Choice(name=m, value=m) for m in self.model_names[:25]]

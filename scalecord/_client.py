@@ -9,7 +9,7 @@ import discord
 from discord.ext.commands import Bot
 
 # Local Imports
-from scalecord._constants import ENV
+from scalecord._constants import AppEnvironment
 from scalecord._commands import UpscaleCog
 
 """
@@ -20,10 +20,11 @@ from scalecord._commands import UpscaleCog
 class BotClient(Bot):
     """Our main bot object."""
 
-    def __init__(self, intents: Optional[discord.Intents]):
+    def __init__(self, intents: Optional[discord.Intents], env: AppEnvironment):
+        self._env = env
 
         # Establish priority guilds
-        self.my_guilds = [discord.Object(id=i) for i in ENV.DISCORD_GUILD_IDS]
+        self.my_guilds = [discord.Object(id=i) for i in env.DISCORD_GUILD_IDS]
         super().__init__(command_prefix='/', intents=intents)
 
     """
@@ -55,20 +56,21 @@ class BotClient(Bot):
 """
 
 
-def get_bot_client(intents: Optional[discord.Intents] = None):
+def get_bot_client(env: AppEnvironment, intents: Optional[discord.Intents] = None):
     """Returns a BotClient instance."""
     if not intents:
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
         intents.presences = True
-    return BotClient(intents=intents)
+    return BotClient(intents=intents, env=env)
 
 
-def run_bot_client(token: Optional[str] = None, intents: Optional[discord.Intents] = None):
+def run_bot_client(
+    env: AppEnvironment,
+    intents: Optional[discord.Intents] = None
+):
     """Create a BotClient instance, run it, and return it."""
-    if not token:
-        token = ENV.DISCORD_BOT_TOKEN
-    bot = get_bot_client(intents)
-    bot.run(token)
+    bot = get_bot_client(env, intents)
+    bot.run(env.DISCORD_BOT_TOKEN)
     return bot
