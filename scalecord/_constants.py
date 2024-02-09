@@ -22,6 +22,16 @@ from scalecord.utils.models import get_supported_models, get_manifest_data
 
 
 class AppEnvironment:
+    _env_defaults = {
+        'DISCORD_BOT_TOKEN': '',
+        'DISCORD_GUILD_IDS': set(),
+        'GITHUB_ACCESS_TOKEN': '',
+        'MAX_MODEL_SCALE': 8,
+        'MIN_COLORS_IN': 3,
+        'MIN_COLORS_OUT': 3,
+        'OWNER_ONLY': 0
+    }
+
     def __init__(self, **kwargs):
 
         # Establish current working directory
@@ -37,6 +47,13 @@ class AppEnvironment:
                 config=kwargs.get('loader_config', None))
         except (FileNotFoundError, OSError, ValueError):
             self._env = {}
+
+        # Set environment variables from os.environ when provided
+        for n in self._env_defaults.keys():
+            if os.environ.get(n):
+                self._env[n] = os.environ[n]
+            elif not self._env.get(n):
+                self._env[n] = self._env_defaults[n]
 
         # Load app models
         self._models = get_supported_models(
@@ -113,36 +130,68 @@ class AppEnvironment:
         return self._path_root / '.models'
 
     """
-    * API Tokens
+    * Supported Environment Variables
     """
-
-    @cached_property
-    def GITHUB_ACCESS_TOKEN(self) -> str:
-        """str: GitHub personal access token used to raise GitHub API rate limits."""
-        token = self._env.get('GITHUB_ACCESS_TOKEN', 'token_string_here').strip()
-        if token in [None, '', 'token_string_here']:
-            return ''
-        return token
 
     @cached_property
     def DISCORD_BOT_TOKEN(self) -> str:
         """str: Discord bot token used to log the bot into Discord."""
-        token = self._env.get('DISCORD_BOT_TOKEN', 'token_string_here').strip()
-        if token in [None, '', 'token_string_here']:
-            return ''
-        return token
-
-    """
-    * Discord Settings
-    """
+        VAR_NAME = 'DISCORD_BOT_TOKEN'
+        return str(self._env.get(VAR_NAME, self._env_defaults[VAR_NAME]).strip())
 
     @cached_property
     def DISCORD_GUILD_IDS(self) -> set[int]:
         """list[str]: Discord server IDs to sync commands to instantly when the bot launches."""
-        ids = self._env.get('DISCORD_GUILD_IDS', [])
-        if not isinstance(ids, (list, tuple, set)):
-            return set()
-        return set(i for i in ids if isinstance(i, int))
+        VAR_NAME = 'DISCORD_GUILD_IDS'
+        VAL = self._env.get(VAR_NAME, self._env_defaults[VAR_NAME])
+        if not VAL or not isinstance(VAL, (list, tuple, set)):
+            return self._env_defaults[VAR_NAME]
+        return set(
+            int(i) for i in VAL
+            if str(i).isnumeric()
+        )
+
+    @cached_property
+    def GITHUB_ACCESS_TOKEN(self) -> str:
+        """str: GitHub personal access token used to raise GitHub API rate limits."""
+        VAR_NAME = 'GITHUB_ACCESS_TOKEN'
+        return str(self._env.get(VAR_NAME, self._env_defaults[VAR_NAME]).strip())
+
+    @cached_property
+    def MAX_MODEL_SCALE(self) -> int:
+        """int: Governs the max 'scale' value Scalecord will allow when indexing models."""
+        VAR_NAME = 'MAX_MODEL_SCALE'
+        VAL = self._env.get(VAR_NAME)
+        if VAL and str(VAL).isnumeric():
+            return VAL
+        return self._env_defaults[VAR_NAME]
+
+    @cached_property
+    def MIN_COLORS_IN(self) -> int:
+        """int: Governs the min inputChannels (input colors) value Scalecord will allow when indexing models."""
+        VAR_NAME = 'MIN_COLORS_IN'
+        VAL = self._env.get(VAR_NAME)
+        if VAL and str(VAL).isnumeric():
+            return VAL
+        return self._env_defaults[VAR_NAME]
+
+    @cached_property
+    def MIN_COLORS_OUT(self) -> int:
+        """int: Governs the min outputChannels (output colors) value Scalecord will allow when indexing models."""
+        VAR_NAME = 'MIN_COLORS_OUT'
+        VAL = self._env.get(VAR_NAME)
+        if VAL and str(VAL).isnumeric():
+            return VAL
+        return self._env_defaults[VAR_NAME]
+
+    @cached_property
+    def OWNER_ONLY(self) -> int:
+        """bool: Governs whether upscaling commands can only be used by the server owner."""
+        VAR_NAME = 'OWNER_ONLY'
+        VAL = self._env.get(VAR_NAME, self._env_defaults[VAR_NAME])
+        if str(VAL).lower() in ['1', 'on', 'yes', 'true']:
+            return True
+        return False
 
     """
     * Model Data

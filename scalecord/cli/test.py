@@ -55,7 +55,7 @@ def test_urls():
                 with requests.get(u, stream=True) as r:
                     if r.status_code == 200:
                         content_length = r.headers.get('Content-Length', '')
-                        if content_length and content_length.isalnum():
+                        if content_length and content_length.isnumeric():
                             good.setdefault(hostname, 0)
                             good[hostname] += 1
                             continue
