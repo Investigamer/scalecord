@@ -1453,7 +1453,7 @@ yarl = "^1.9.4"
 type = "git"
 url = "https://github.com/Investigamer/omnitils.git"
 reference = "HEAD"
-resolved_reference = "29432039b56cb4839e2546bf25aed57da2b276fe"
+resolved_reference = "391d364baad22117eae0af6c3654371256bab639"
 
 [[package]]
 name = "packaging"
@@ -2784,4 +2784,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "73bda7486e3c15eeb8701021d811c09c25927a1c877216381498cc02c556667c"
+content-hash = "1fa73ff5c40cb5af2cc6a8767d610c104497ec299f2b0f038170ae9be93117ab"
