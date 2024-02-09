@@ -144,6 +144,8 @@ class AppEnvironment:
         """list[str]: Discord server IDs to sync commands to instantly when the bot launches."""
         VAR_NAME = 'DISCORD_GUILD_IDS'
         VAL = self._env.get(VAR_NAME, self._env_defaults[VAR_NAME])
+        if isinstance(VAL, str) and ',' in str:
+            VAL = [n.strip() for n in VAL.split(',')]
         if not VAL or not isinstance(VAL, (list, tuple, set)):
             return self._env_defaults[VAR_NAME]
         return set(
