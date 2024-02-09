@@ -30,7 +30,6 @@ priority = "supplemental"
 
 [tool.commitizen]
 version = "0.1.1"
-changelog_start_rev = "0.1.0"
 tag_format = "$major.$minor.$patch"
 update_changelog_on_bump = true
 version_files = [
