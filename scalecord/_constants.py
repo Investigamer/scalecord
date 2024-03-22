@@ -4,9 +4,8 @@
 # Standard Library Imports
 import os
 from functools import cached_property
-from logging import Logger, getLogger
+import logging
 from pathlib import Path
-
 
 # Third Party Imports
 from omnitils.files_data import load_data_file
@@ -26,7 +25,7 @@ class AppEnvironment:
         'DISCORD_BOT_TOKEN': '',
         'DISCORD_GUILD_IDS': set(),
         'GITHUB_ACCESS_TOKEN': '',
-        'MAX_MODEL_SCALE': 8,
+        'MAX_MODEL_SCALE': 4,
         'MIN_COLORS_IN': 3,
         'MIN_COLORS_OUT': 3,
         'OWNER_ONLY': 0
@@ -39,6 +38,12 @@ class AppEnvironment:
             'path_root', Path(__file__).parent.parent)
         if Path(os.getcwd()) != self._path_root:
             os.chdir(self._path_root)
+
+        # Create mandatory paths
+        mkdir_full_perms(self.PATH_CONFIG)
+        mkdir_full_perms(self.PATH_CACHE_IN)
+        mkdir_full_perms(self.PATH_CACHE_OUT)
+        mkdir_full_perms(self.PATH_MODELS)
 
         # Load environment variables
         try:
@@ -55,9 +60,15 @@ class AppEnvironment:
             elif not self._env.get(n):
                 self._env[n] = self._env_defaults[n]
 
+        # Join manifest data
+        local_models = self.PATH_CONFIG / 'models.yml'
+        local_manifest = get_manifest_data(local_models) if local_models.is_file() else {}
+        all_models = get_manifest_data(self.PATH_CACHE_MODELS)
+        all_models.update(local_manifest)
+
         # Load app models
         self._models = get_supported_models(
-            models=get_manifest_data(self.PATH_CACHE_MODELS),
+            models=all_models,
             tags=get_manifest_data(self.PATH_CACHE_TAGS),
             models_path=self.PATH_MODELS)
 
@@ -72,8 +83,11 @@ class AppEnvironment:
     """
 
     @cached_property
-    def LOGR(self) -> Logger:
-        return getLogger()
+    def LOGR(self) -> logging.Logger:
+        """Logger: Backend logging object."""
+        logger = logging.getLogger('discord')
+        logger.setLevel(logging.INFO)
+        return logger
 
     """
     * Path Properties
@@ -144,7 +158,7 @@ class AppEnvironment:
         """list[str]: Discord server IDs to sync commands to instantly when the bot launches."""
         VAR_NAME = 'DISCORD_GUILD_IDS'
         VAL = self._env.get(VAR_NAME, self._env_defaults[VAR_NAME])
-        if isinstance(VAL, str) and ',' in str:
+        if isinstance(VAL, str) and ',' in VAL:
             VAL = [n.strip() for n in VAL.split(',')]
         if not VAL or not isinstance(VAL, (list, tuple, set)):
             return self._env_defaults[VAR_NAME]
@@ -170,7 +184,7 @@ class AppEnvironment:
 
     @cached_property
     def MIN_COLORS_IN(self) -> int:
-        """int: Governs the min inputChannels (input colors) value Scalecord will allow when indexing models."""
+        """int: Governs the min inputChannels value Scalecord will allow when indexing models."""
         VAR_NAME = 'MIN_COLORS_IN'
         VAL = self._env.get(VAR_NAME)
         if VAL and str(VAL).isnumeric():
@@ -179,7 +193,7 @@ class AppEnvironment:
 
     @cached_property
     def MIN_COLORS_OUT(self) -> int:
-        """int: Governs the min outputChannels (output colors) value Scalecord will allow when indexing models."""
+        """int: Governs the min outputChannels value Scalecord will allow when indexing models."""
         VAR_NAME = 'MIN_COLORS_OUT'
         VAL = self._env.get(VAR_NAME)
         if VAL and str(VAL).isnumeric():
@@ -223,8 +237,4 @@ class AppEnvironment:
 def initialize_environment(**kwargs) -> AppEnvironment:
     """Initializes the global state."""
     env_object = AppEnvironment(**kwargs)
-    path_cache = env_object.CWD / '.cache'
-    path_models = env_object.CWD / '.models'
-    mkdir_full_perms(path_cache)
-    mkdir_full_perms(path_models)
     return env_object
