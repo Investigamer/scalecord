@@ -11,6 +11,7 @@ from typing import Optional
 # Third Party Imports
 import requests
 import yarl
+from omnitils.download import download_file_with_callback
 from omnitils.files import get_sha256
 from omnitils.files_data import dump_data_file, load_data_file
 from omnitils.folders import mkdir_full_perms
@@ -197,7 +198,9 @@ def get_manifest_data(path: Path) -> dict:
     with suppress(Exception):
         data = load_data_file(path)
         return data
-    getLogger().error(f"Couldn't load manifest file: {path.name}")
+    getLogger().error(f"Manifest file not found: {path.name}\n"
+                      "Generating empty one.")
+    dump_data_file({}, path)
     return {}
 
 
@@ -272,27 +275,37 @@ def rename_existing_models(manifest_path: Path, models_path: Path) -> None:
 
 
 def download_model(url: str, path: Path, chunk_size: int = 1024 * 1024 * 8) -> None:
-    with suppress(Exception):
+    """Download a model in chunks.
 
-        # Download the file
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
+    Args:
+        url: URL where the model is hosted.
+        path: Path to save the model.
+        chunk_size: Amount of bytes to write on each stream iteration.
+    """
+    pbar = tqdm(total=0, unit='B', unit_scale=True, desc=f'[...] {path.stem}')
 
-            # Write the file in chunks
-            pbar = tqdm(
-                    total=int(r.headers.get('Content-Length', 0)),
-                    unit='B', unit_scale=True, desc=f'[...] {path.stem}')
-            with suppress(Exception):
-                with path.open('wb') as f:
-                    for chunk in r.iter_content(chunk_size=chunk_size):
-                        f.write(chunk)
-                        pbar.update(len(chunk))
-                pbar.set_description(f'[SUCCESS] {path.stem}')
-                pbar.close()
-            pbar.set_description(f'[FAILED] {path.stem}')
-            pbar.close()
-            return
-    return print(f'[FAILED] {path.stem}' + ('=' * 120))
+    def _update_progress(_url: str, _path: Path, current: int, total: int):
+        """Updates the progress bar after each chunk written."""
+        if pbar.total == 0:
+            pbar.total = total
+        pbar.update(current)
+
+    # Download the file
+    try:
+        download_file_with_callback(
+            url=url,
+            path=path,
+            callback=_update_progress,
+            chunk_size=chunk_size)
+
+        # Download successful
+        pbar.set_description(f'[SUCCESS] {path.stem}')
+        return pbar.close()
+
+    except Exception as e:
+        # Download failed
+        pbar.set_description(f'[FAILED] {path.stem} ({str(e)})')
+        return pbar.close()
 
 
 """
