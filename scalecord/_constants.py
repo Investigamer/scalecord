@@ -99,8 +99,8 @@ class AppEnvironment:
 
     @property
     def PATH_CONFIG(self) -> Path:
-        """Path: Path to the `.config` directory."""
-        return self._path_root / '.config'
+        """Path: Path to the `config` directory."""
+        return self._path_root / 'config'
 
     @property
     def PATH_CONFIG_ENV(self) -> Path:
@@ -109,8 +109,8 @@ class AppEnvironment:
 
     @property
     def PATH_CACHE(self) -> Path:
-        """Path: Path to the `.cache` directory."""
-        return self._path_root / '.cache'
+        """Path: Path to the `cache` directory."""
+        return self._path_root / 'cache'
 
     @property
     def PATH_CACHE_MODELS(self) -> Path:
@@ -139,8 +139,8 @@ class AppEnvironment:
 
     @property
     def PATH_MODELS(self) -> Path:
-        """Path: Path to the `.models` directory."""
-        return self._path_root / '.models'
+        """Path: Path to the `models` directory."""
+        return self._path_root / 'models'
 
     """
     * Supported Environment Variables
