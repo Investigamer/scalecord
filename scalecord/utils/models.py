@@ -77,7 +77,7 @@ def format_architecture_data(data: dict[str, OMDBArchitecture]) -> dict[str, str
 def format_model_data(
         data: dict[str, OMDBModel],
         architectures: dict[str, str],
-        max_scale: int = 8
+        max_scale: int = 4
 ) -> dict[str, ManifestModel]:
     """Formats model data retrieved from OpenModelDB to reduce filesize.
 
@@ -138,7 +138,7 @@ def download_manifest_data(url: str) -> dict:
 def update_model_data(
     cache_path: Path,
     manifest_map: ModelManifestMap,
-    max_scale: int = 8
+    max_scale: int = 4
 ) -> Optional[dict[str, ManifestModel]]:
     """Downloads the latest manifest files from OpenModelDB and updates the models manifest.
 

@@ -55,10 +55,9 @@ class AppEnvironment:
 
         # Set environment variables from os.environ when provided
         for n in self._env_defaults.keys():
-            if os.environ.get(n):
-                self._env[n] = os.environ[n]
-            elif not self._env.get(n):
-                self._env[n] = self._env_defaults[n]
+            if self._env.get(n) not in [None, '']:
+                continue
+            self._env[n] = os.environ.get(n, self._env_defaults[n])
 
         # Join manifest data
         local_models = self.PATH_CONFIG / 'models.yml'
@@ -178,8 +177,8 @@ class AppEnvironment:
         """int: Governs the max 'scale' value Scalecord will allow when indexing models."""
         VAR_NAME = 'MAX_MODEL_SCALE'
         VAL = self._env.get(VAR_NAME)
-        if VAL and str(VAL).isnumeric():
-            return VAL
+        if VAL and str(VAL).isdigit():
+            return int(VAL)
         return self._env_defaults[VAR_NAME]
 
     @cached_property
@@ -188,7 +187,7 @@ class AppEnvironment:
         VAR_NAME = 'MIN_COLORS_IN'
         VAL = self._env.get(VAR_NAME)
         if VAL and str(VAL).isnumeric():
-            return VAL
+            return int(VAL)
         return self._env_defaults[VAR_NAME]
 
     @cached_property
@@ -197,11 +196,11 @@ class AppEnvironment:
         VAR_NAME = 'MIN_COLORS_OUT'
         VAL = self._env.get(VAR_NAME)
         if VAL and str(VAL).isnumeric():
-            return VAL
+            return int(VAL)
         return self._env_defaults[VAR_NAME]
 
     @cached_property
-    def OWNER_ONLY(self) -> int:
+    def OWNER_ONLY(self) -> bool:
         """bool: Governs whether upscaling commands can only be used by the server owner."""
         VAR_NAME = 'OWNER_ONLY'
         VAL = self._env.get(VAR_NAME, self._env_defaults[VAR_NAME])
