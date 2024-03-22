@@ -3,7 +3,8 @@
 """
 # Standard Library Imports
 from pathlib import Path
-from typing import TypedDict, NotRequired
+from typing import TypedDict
+from typing_extensions import NotRequired
 
 """
 * Map Schemas
