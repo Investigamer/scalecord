@@ -8,6 +8,8 @@ import click
 from scalecord.cli.bot import BotCLIGroup
 from scalecord.cli.test import TestCLIGroup
 from scalecord.cli.update import UpdateCLIGroup
+from scalecord.cli.upscale import UpscaleCLIGroup
+from scalecord.cli.generate import GenerateCLIGroup
 
 """
 * CLI Application
@@ -17,8 +19,10 @@ from scalecord.cli.update import UpdateCLIGroup
 @click.group(
     commands={
         'bot': BotCLIGroup,
+        'generate': GenerateCLIGroup,
+        'test': TestCLIGroup,
         'update': UpdateCLIGroup,
-        'test': TestCLIGroup
+        'upscale': UpscaleCLIGroup
     },
     invoke_without_command=True,
     context_settings={'ignore_unknown_options': True}

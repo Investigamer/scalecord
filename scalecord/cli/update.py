@@ -27,7 +27,7 @@ def update_data():
     update_model_data(
         cache_path=ENV.PATH_CACHE,
         manifest_map=ENV.MANIFEST_URLS,
-        max_scale=8)
+        max_scale=ENV.MAX_MODEL_SCALE)
 
 
 @click.command(
@@ -47,6 +47,9 @@ def update_models():
                 mods[name] = url
     for name, url in mods.items():
         path = Path(ENV.PATH_MODELS, name).with_suffix('.pth')
+        if path.is_file():
+            # Todo: Check if existing file needs an update
+            continue
         download_model(url=url, path=path)
 
 
@@ -58,7 +61,7 @@ def update_models():
 @click.group(
     name='update',
     commands={
-        'manifest': update_data,
+        'data': update_data,
         'models': update_models
     },
     invoke_without_command=True,

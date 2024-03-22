@@ -1,14 +1,12 @@
 """
 * Commands: Bot Group
 """
-
 # Third Party Imports
 import click
 
 # Local Imports
 from scalecord._constants import initialize_environment
 from scalecord._client import run_bot_client
-
 
 """
 * Commands
