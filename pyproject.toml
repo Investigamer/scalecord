@@ -11,14 +11,19 @@ include = 'scalecord'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
-spandrel = "^0.2.1"
+discord-py = "^2.3.2"
 torch = {version = "^2.2.0+cu121", source = "pytorch"}
 torchvision = {version = "^0.17.0+cu121", source = "pytorch"}
-discord-py = "^2.3.2"
 omnitils = {git = "https://github.com/Investigamer/omnitils.git"}
+spandrel = "^0.2.1"
 click = "^8.1.7"
+transformers = "^4.37.2"
+diffusers = "^0.26.3"
+accelerate = "^0.27.2"
+matplotlib = "^3.8.3"
 
 [tool.poetry.group.dev.dependencies]
+
 commitizen = "^3.14.0"
 mypy = "^1.8.0"
 mkdocs = "^1.5.3"

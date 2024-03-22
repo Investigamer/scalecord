@@ -1,0 +1,18 @@
+###
+# * Custom Model Definitions
+# * Here you can define your own model files to be supported by the app
+# from a source of your choosing. Below I've provided an example model
+# for upscaling Magic the Gathering arts hosted on huggingface.
+###
+2x-RealESRGAN_x2plus_mtg:
+  architecture: esrgan
+  name: RealESRGAN+ MTG
+  resources:
+    4551e10dcf1b3ad8ca0b60f2633dd77a16ec9251a254e909fb569964ca950088:
+    - https://huggingface.co/rullaf/RealESRGAN_MtG/blob/main/RealESRGAN_x2plus_mtg_v1.pth
+  scale: 2
+  tags:
+  - anime
+  - cartoon
+  - general-upscaler
+  - restoration

@@ -8,7 +8,7 @@ OpenModelDB to provide model metadata, automatically download models, and keep m
 - An Nvidia GPU
 - A discord [bot token](https://discord.com/developers/applications?new_application=true)
 
-## How to Install
+## Python Guide
 1. Clone this repository somewhere on your system.
 2. Install our requirements with `poetry install`.
 3. In the `.config` directory, duplicate the `dist.env.yml` file and rename it `env.yml`.
@@ -19,8 +19,36 @@ file for the `DISCORD_BOT_TOKEN` key.
 7. Fill in any additional optional values in the `env.yml`, remove any you don't wish to use.
 8. Launch the bot using `poetry run scalecord`
 
-## How to Install (Docker)
-We will be supporting a dockerized version soon.
+## Docker Guide
+Here's a boilerplate `docker-compose.yml` for the project:
+```yaml
+version: "3.8"
+services:
+  scalecord:
+    image: investigamer/scalecord:latest
+    container_name: scalecord
+    environment:
+      - DISCORD_BOT_TOKEN=your_bot_token_here
+      - DISCORD_GUILD_IDS=your_server_id_here,another_server_id,comma_separated
+      - GITHUB_ACCESS_TOKEN=github_access_token_optional
+    ports:
+      - "5000:5000"
+    volumes:
+      # Map a directory to app/.cache, app/.config, app/.models
+      - "C:/windows/path/to/.cache:/app/.cache"
+      - "linux/path/to/.config:/app/.config"
+      - "macos/path/to/.models:/app/.models"
+    restart: unless-stopped
+    # Below is required for upscaling with Nvidia GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+
+```
 
 ## Where do I get models from?
 [OpenModelDB](https://openmodeldb.info) is highly recommended since this app synchronizes tags and information for any models 

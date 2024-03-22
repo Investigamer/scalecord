@@ -152,6 +152,8 @@ cython_debug/
 #.idea/
 
 # Scalecord specific
-.config/env.yml
-.config/models.yml
-.models/*
+cache/*
+config/env.yml
+config/models.yml
+models/*
+docker-compose.yml
