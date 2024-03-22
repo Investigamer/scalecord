@@ -52,6 +52,18 @@ class UpscaleCog(commands.Cog):
     @app_commands.command(name='upscale', description="Upscale a provided image using a chosen model.")
     async def upscale_attached_image(self, ctx: type(Interaction), model_name: str, image: Attachment):
 
+        # Ensure image is valid
+        if any([bool(not n) for n in [image.height, image.width]]):
+            # Image not supplied
+            return await ctx.response.send_message(
+                f'Sorry {ctx.user.mention}, the attachment you provided is not a valid image!')
+        if any([bool(n > 2000) for n in [image.height, image.width]]):
+            # Todo: Create max dimensions environment variable
+            # Image is too large
+            return await ctx.response.send_message(
+                f'Sorry {ctx.user.mention}, the image you provided was too big!\n'
+                f'Right now we support upscaling images **2000px or smaller** (height or width).')
+
         # Load the selected model
         model: ScalecordModel = self._models.get(model_name)
         if not model:
@@ -62,7 +74,7 @@ class UpscaleCog(commands.Cog):
         display_name = f"`[{model['scale']}X] {model['name']}`"
         display_arch = f"`{self._env.ARCHITECTURES[model['architecture']]}`"
         display_tags = ', '.join([
-            f'`{self._env.TAGS[n]['name']}`' for n in model['tags']
+            f"`{self._env.TAGS[n]['name']}`" for n in model['tags']
         ])
 
         # Alert the user upscale is starting
@@ -83,11 +95,18 @@ class UpscaleCog(commands.Cog):
             s = perf_counter()
             image = Image.open(image_in)
             dims_before = ' x '.join(str(n) for n in image.size)
-            upscaled_image = upscale_image(model['path'], image)
+            upscaled_image: Image = await upscale_image(model['path'], image)
             upscaled_image.save(image_out, quality=95)
             dims_after = ' x '.join(str(n) for n in upscaled_image.size)
             time_completed = round(perf_counter()-s, 2)
             os.remove(image_in)
+
+        # Log to console
+        self._env.LOGR.info(
+            f'[User: {ctx.user.name}] '
+            f'Upscaled an image using {model["name"]}. '
+            f'[{dims_before} -> {dims_after}]'
+        )
 
         # Send the message, with the image attached
         await ctx.edit_original_response(
