@@ -2,24 +2,68 @@
 * Utils: Upscale
 """
 # Standard Library Imports
+from datetime import datetime
 from logging import Logger, getLogger
 from pathlib import Path
+import socket
 from typing import Optional
 
 # Third Party Imports
 import numpy as np
-from PIL import Image
+import PIL
+from PIL.Image import Image
 from spandrel import ModelLoader, ImageModelDescriptor
 import torchvision.transforms as transforms
 import torch
 
 
 """
-* Util Funcs
+* Context Managers
 """
 
 
-def upscale_image(model_path: Path, image: Image, logger: Optional[Logger] = None) -> Image:
+class ProfileUpscaleAction:
+    """Context manager to profile torch CPU and CUDA resources during an upscale action."""
+
+    def __init__(self):
+        self._profile = None
+
+    def __enter__(self):
+        """Enter the context manager."""
+        self._profile = torch.profiler.profile(
+            activities=[
+                torch.profiler.ProfilerActivity.CPU,
+                torch.profiler.ProfilerActivity.CUDA
+            ],
+            schedule=torch.profiler.schedule(
+                wait=0, warmup=0, active=6, repeat=1),
+            record_shapes=True,
+            profile_memory=True,
+            with_stack=True,
+            on_trace_ready=self.trace_ready
+        )
+        self._profile.start()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Close the context manager."""
+        self._profile.stop()
+
+    @staticmethod
+    def trace_ready(self, _profile):
+        """Write trace."""
+        host_name = socket.gethostname()
+        timestamp = datetime.now().strftime("%b_%d_%H_%M_%S")
+        file_prefix = f"{host_name}_{timestamp}"
+        _profile.export_chrome_trace(f"{file_prefix}.json.gz")
+        _profile.export_memory_timeline(f"{file_prefix}.html", device="cuda:0")
+
+
+"""
+* Upscaling Images
+"""
+
+
+async def upscale_image(model_path: Path, image: Image, logger: Optional[Logger] = None) -> Optional[Image]:
     """Upscales an image.
 
     Args:
@@ -47,8 +91,7 @@ def upscale_image(model_path: Path, image: Image, logger: Optional[Logger] = Non
     # Upscale the image
     with torch.no_grad():
         upscaled_image = model(tensor).cpu()
-    image.close()
 
     # Convert the upscaled image to a PIL Image
     image_array = (upscaled_image.squeeze().permute(1, 2, 0).numpy() * 255).astype(np.uint8)
-    return Image.fromarray(image_array)
+    return PIL.Image.fromarray(image_array)

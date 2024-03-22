@@ -11,7 +11,7 @@ OpenModelDB to provide model metadata, automatically download models, and keep m
 ## Python Guide
 1. Clone this repository somewhere on your system.
 2. Install our requirements with `poetry install`.
-3. In the `.config` directory, duplicate the `dist.env.yml` file and rename it `env.yml`.
+3. In the `config` directory, duplicate the `dist.env.yml` file and rename it `env.yml`.
 4. Create a bot by clicking the link above.
 5. Invite it to your server via by going to "Oauth2" -> "URL Generator", generate a URL and navigate to it.
 6. On the "Bot" page in your bot developer portal, click "Reset Token", copy that token. Paste it into the `env.yml` 
@@ -34,10 +34,10 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      # Map a directory to app/.cache, app/.config, app/.models
-      - "C:/windows/path/to/.cache:/app/.cache"
-      - "linux/path/to/.config:/app/.config"
-      - "macos/path/to/.models:/app/.models"
+      # Map a directory to each: app/cache, app/config, app/models
+      - "C:/windows/path/to/cache:/app/cache"
+      - "linux/path/to/config:/app/config"
+      - "macos/path/to/models:/app/models"
     restart: unless-stopped
     # Below is required for upscaling with Nvidia GPU
     deploy:
@@ -64,6 +64,10 @@ scalecord update models
 Please note that currently this will only download models that have a valid direct URL. We plan to support downloading 
 from other sources like Google Drive and Mega.nz in the future. Models not on OpenModelDB will need to provide any 
 related metadata manually (docs pending).
+
+## How do I define custom models?
+Duplicate the `dist.models.yml` file, rename it `models.yml`. Here you can define custom models sourced from 
+wherever you prefer.
 
 ## Planned Features and Improvements
 - A dockerized version of the app
