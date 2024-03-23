@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scalecord"
-version = "0.1.2"
+version = "0.1.3"
 description = "An image upscaling bot for discord using PyTorch supported models from OpenModelDB."
 authors = ["Investigamer <freethoughtleft@gmail.com>"]
 license = "MPL-2.0"
@@ -34,7 +34,7 @@ url = "https://download.pytorch.org/whl/cu121"
 priority = "supplemental"
 
 [tool.commitizen]
-version = "0.1.2"
+version = "0.1.3"
 tag_format = "$major.$minor.$patch"
 update_changelog_on_bump = true
 version_files = [

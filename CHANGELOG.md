@@ -1,3 +1,14 @@
+## 0.1.3 (2024-03-23)
+
+### Fix
+
+- **torch**: Attempt to prevent GPU running out of memory
+- **constants**: Ensure integer is enforced on max scale var
+
+### Refactor
+
+- **constants**: Rename directories
+
 ## 0.1.2 (2024-03-22)
 
 ### Fix
