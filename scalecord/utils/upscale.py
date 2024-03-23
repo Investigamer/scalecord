@@ -91,7 +91,12 @@ async def upscale_image(model_path: Path, image: Image, logger: Optional[Logger]
     # Upscale the image
     with torch.no_grad():
         upscaled_image = model(tensor).cpu()
+    del tensor
 
     # Convert the upscaled image to a PIL Image
     image_array = (upscaled_image.squeeze().permute(1, 2, 0).numpy() * 255).astype(np.uint8)
+    del upscaled_image
+
+    # Clear cuda cache and return the upscale
+    torch.cuda.empty_cache()
     return PIL.Image.fromarray(image_array)

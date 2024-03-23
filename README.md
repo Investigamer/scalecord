@@ -31,6 +31,8 @@ services:
       - DISCORD_BOT_TOKEN=your_bot_token_here
       - DISCORD_GUILD_IDS=your_server_id_here,another_server_id,comma_separated
       - GITHUB_ACCESS_TOKEN=github_access_token_optional
+      # You may want this line for GPUs with less memory
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
     ports:
       - "5000:5000"
     volumes:
@@ -47,7 +49,6 @@ services:
           - driver: nvidia
             count: 1
             capabilities: [gpu]
-
 ```
 
 ## Where do I get models from?
