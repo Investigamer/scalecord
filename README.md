@@ -71,10 +71,9 @@ Duplicate the `dist.models.yml` file, rename it `models.yml`. Here you can defin
 wherever you prefer.
 
 ## Planned Features and Improvements
-- A dockerized version of the app
+- Possibly generative AI (stable diffusion) integration
 - Wider support for automated model downloads
 - More environment control, commands, settings, etc
-- Manual metadata definitions for non-OMDB models
 - More robust README and supporting documentation
 - Support for AMD / CPU-only upscaling
 - Support for NCNN / ONNX models

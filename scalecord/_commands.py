@@ -7,7 +7,7 @@ from itertools import islice
 from pathlib import Path
 import random
 import string
-from threading import Lock
+from asyncio import Lock
 from time import perf_counter
 
 # Third Party Imports
@@ -21,7 +21,8 @@ from omnitils.properties import default_property
 # Local Imports
 from scalecord._constants import AppEnvironment
 from scalecord.types.models import ScalecordModel
-from scalecord.utils.upscale import upscale_image
+from scalecord.utils.image import convert_to_jpg
+from scalecord.utils.upscale import process_image_upscale
 
 """
 * Command Groups
@@ -91,17 +92,37 @@ class UpscaleCog(commands.Cog):
         await image.save(image_in)
 
         # Upscale and save the upscaled image
-        with self.render_lock:
-            s = perf_counter()
-            image = Image.open(image_in)
-            dims_before = ' x '.join(str(n) for n in image.size)
-            upscaled_image: Image = await upscale_image(model['path'], image)
-            upscaled_image.save(image_out, quality=95)
-            dims_after = ' x '.join(str(n) for n in upscaled_image.size)
-            time_completed = round(perf_counter()-s, 2)
-            os.remove(image_in)
+        async with self.render_lock:
 
-        # Log to console
+            # Start timer and open image
+            s = perf_counter()
+            with Image.open(image_in) as img:
+                image = await convert_to_jpg(img)
+
+            # Upscale the image
+            upscaled_image: Image = await process_image_upscale(
+                model_path=model['path'],
+                image=image,
+                logger=self._env.LOGR)
+
+            # Alert the user if upscale failed, otherwise save the image
+            if not upscaled_image:
+                await ctx.edit_original_response(
+                    content=f'Sorry {ctx.user.mention}, my GPU couldn\'t handle that image at the moment!')
+                os.remove(image_in)
+                return
+            upscaled_image.save(image_out, quality=95)
+
+            # Get before and after dimensions, then close the images
+            dims_before = ' x '.join(str(n) for n in image.size)
+            dims_after = ' x '.join(str(n) for n in upscaled_image.size)
+            image.close()
+            upscaled_image.close()
+
+            # Log time completed and delete the image
+            time_completed = round(perf_counter()-s, 2)
+
+        # Log to backend
         self._env.LOGR.info(
             f'[User: {ctx.user.name}] '
             f'Upscaled an image using {model["name"]}. '
@@ -116,7 +137,9 @@ class UpscaleCog(commands.Cog):
                     f"> **Dimensions:** `{dims_before}` **->** `{dims_after}`\n"
                     f"> **Architecture:** {display_arch}\n",
             attachments=[File(image_out)])
-        os.remove(image_out)
+
+        # Remove images
+        os.remove(image_out), os.remove(image_in)
 
     """
     * Autocomplete Methods
