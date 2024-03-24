@@ -17,10 +17,6 @@ torchvision = {version = "^0.17.0+cu121", source = "pytorch"}
 omnitils = {git = "https://github.com/Investigamer/omnitils.git"}
 spandrel = "^0.2.1"
 click = "^8.1.7"
-transformers = "^4.37.2"
-diffusers = "^0.26.3"
-accelerate = "^0.27.2"
-matplotlib = "^3.8.3"
 
 [tool.poetry.group.dev.dependencies]
 

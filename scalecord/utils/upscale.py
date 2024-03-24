@@ -8,7 +8,6 @@ import gc
 from logging import Logger, getLogger
 from pathlib import Path
 import socket
-from traceback import print_tb
 from typing import Optional
 
 # Third Party Imports
