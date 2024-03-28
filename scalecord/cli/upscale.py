@@ -44,8 +44,12 @@ async def upscale_image(image_path: str):
 
     # Upscale and save the upscaled image
     image = Image.open(image_in)
-    upscaled_image = asyncio.run(upscale.upscale_image(model['path'], image))
-    upscaled_image.save(image_out, quality=95)
+    upscaled_image = asyncio.run(
+        upscale.process_image_upscale(
+            model_path=model['path'],
+            image=image,
+            logger=env.LOGR))
+    upscaled_image.save(image_out, quality=97)
 
     # Reply
     env.LOGR.info('Image upscaled!')

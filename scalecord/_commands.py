@@ -21,7 +21,6 @@ from omnitils.properties import default_property
 # Local Imports
 from scalecord._constants import AppEnvironment
 from scalecord.types.models import ScalecordModel
-from scalecord.utils.image import convert_to_jpg
 from scalecord.utils.upscale import process_image_upscale
 
 """
@@ -96,14 +95,13 @@ class UpscaleCog(commands.Cog):
 
             # Start timer and open image
             s = perf_counter()
-            with Image.open(image_in) as img:
-                image = await convert_to_jpg(img)
 
             # Upscale the image
-            upscaled_image: Image = await process_image_upscale(
-                model_path=model['path'],
-                image=image,
-                logger=self._env.LOGR)
+            with Image.open(image_in) as image:
+                upscaled_image: Image = await process_image_upscale(
+                    model_path=model['path'],
+                    image=image,
+                    logger=self._env.LOGR)
 
             # Alert the user if upscale failed, otherwise save the image
             if not upscaled_image:
@@ -111,13 +109,41 @@ class UpscaleCog(commands.Cog):
                     content=f'Sorry {ctx.user.mention}, my GPU couldn\'t handle that image at the moment!')
                 os.remove(image_in)
                 return
-            upscaled_image.save(image_out, quality=95)
+            upscaled_image.save(image_out, optimize=True)
+
+            # Check if image is small enough for Discord
+            default_quality = 98
+            while os.path.getsize(image_out) > (25 * 1024 * 1024):
+
+                # Reduce quality on next iteration
+                default_quality -= 1
+
+                # If quality drops below 90%, alert the user and cancel
+                if default_quality < 90:
+                    await ctx.edit_original_response(
+                        content=f'Hey {ctx.user.mention}, I managed to upscale your image. However, the result '
+                                f'is too large to upload as an attachment! I tried to optimize the image as a JPEG and '
+                                f'incrementally reduce the quality setting, but even at my configured minimum of 90% '
+                                f'the file was just too darn big!\n'
+                                f'\n'
+                                f'Unfortunately Discord enforces a 25MB file attachment limit for bots like myself. '
+                                f'Feel free to email the Discord support team and let them know how much you hate '
+                                f'this obnoxiously low filesize limit.')
+                    os.remove(image_in)
+                    return
+
+                # Remove old image, enforce JPEG filetype
+                os.remove(image_out)
+                if image_out.suffix != '.jpg':
+                    image_out = image_out.with_suffix('.jpg')
+
+                # Save as optimized JPEG with reduced quality
+                upscaled_image.save(image_out, format='JPEG', quality=97, optimize=True)
 
             # Get before and after dimensions, then close the images
             dims_before = ' x '.join(str(n) for n in image.size)
             dims_after = ' x '.join(str(n) for n in upscaled_image.size)
-            image.close()
-            upscaled_image.close()
+            image.close(), upscaled_image.close()
 
             # Log time completed and delete the image
             time_completed = round(perf_counter()-s, 2)
