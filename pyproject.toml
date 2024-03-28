@@ -12,22 +12,23 @@ include = 'scalecord'
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 discord-py = "^2.3.2"
-torch = {version = "^2.2.0+cu121", source = "pytorch"}
-torchvision = {version = "^0.17.0+cu121", source = "pytorch"}
+torch = {version = "^2.2.1+cu121", source = "pytorch"}
+torchvision = {version = "^0.17.1+cu121", source = "pytorch"}
 omnitils = {git = "https://github.com/Investigamer/omnitils.git"}
 spandrel = "^0.2.1"
 click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
-
 commitizen = "^3.14.0"
 mypy = "^1.8.0"
+
+[tool.poetry.group.docs.dependencies]
 mkdocs = "^1.5.3"
 
 [[tool.poetry.source]]
 name = "pytorch"
 url = "https://download.pytorch.org/whl/cu121"
-priority = "supplemental"
+priority = "explicit"
 
 [tool.commitizen]
 version = "0.1.3"

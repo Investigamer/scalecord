@@ -48,7 +48,7 @@ WORKDIR /app
 COPY poetry.lock pyproject.toml README.md ./
 
 # Install dependencies
-RUN poetry install --no-dev --no-root &&  \
+RUN poetry install --without dev --without docs --no-root &&  \
     poetry cache clear pypi --all &&  \
     poetry cache clear pytorch --all &&  \
     poetry cache clear pytorch-xformers --all &&  \
