@@ -53,6 +53,30 @@ def update_models():
         download_model(url=url, path=path)
 
 
+@click.command(
+    name='all',
+    help='Update manifest data and models.'
+)
+def update_all():
+    """CLI command to update manifest files and all models.."""
+    ENV = initialize_environment()
+    data = update_model_data(
+        cache_path=ENV.PATH_CACHE,
+        manifest_map=ENV.MANIFEST_URLS,
+        max_scale=ENV.MAX_MODEL_SCALE)
+    # Todo: Cleanly combine the data and models command, instead of copy paste
+    mods = {}
+    for name, data in data.items():
+        for url in [url for url in sum(data['resources'].values(), [])]:
+            if url.endswith('.pth'):
+                mods[name] = url
+    for name, url in mods.items():
+        path = Path(ENV.PATH_MODELS, name).with_suffix('.pth')
+        if path.is_file():
+            continue
+        download_model(url=url, path=path)
+
+
 """
 * Command Group
 """
@@ -61,6 +85,7 @@ def update_models():
 @click.group(
     name='update',
     commands={
+        'all': update_all,
         'data': update_data,
         'models': update_models
     },

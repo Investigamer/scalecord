@@ -16,6 +16,7 @@ from scalecord.cli.upscale import UpscaleCLIGroup
 
 
 @click.group(
+    chain=True,
     commands={
         'bot': BotCLIGroup,
         'test': TestCLIGroup,
