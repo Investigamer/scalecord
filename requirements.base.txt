@@ -1,0 +1,7 @@
+click==8.1.7 ; python_version == "3.11"
+discord-py==2.3.2 ; python_version == "3.11"
+numpy==1.26.4 ; python_version == "3.11"
+omnitils @ git+https://github.com/Investigamer/omnitils.git@6bdb1ce2e79554f34ccc559597882b33df7ca579 ; python_version == "3.11"
+tqdm==4.66.2 ; python_version == "3.11"
+typing-extensions==4.10.0 ; python_version == "3.11"
+spandrel==0.2.2 ; python_version == "3.11"
