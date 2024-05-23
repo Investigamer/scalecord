@@ -14,9 +14,9 @@ python = ">=3.10,<3.13"
 discord-py = "^2.3.2"
 torch = {version = "^2.2.1+cu121", source = "pytorch"}
 torchvision = {version = "^0.17.1+cu121", source = "pytorch"}
-omnitils = {git = "https://github.com/Investigamer/omnitils.git"}
 spandrel = "^0.2.1"
 click = "^8.1.7"
+omnitils = {git = "https://github.com/Investigamer/omnitils.git", tag = "1.2.0"}
 
 [tool.poetry.group.dev.dependencies]
 commitizen = "^3.14.0"
