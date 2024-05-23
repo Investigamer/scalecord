@@ -6,7 +6,7 @@ from pathlib import Path
 
 # Third Party Imports
 import click
-from omnitils.files_data import load_data_file
+from omnitils.files import load_data_file
 
 # Local Imports
 from scalecord._constants import initialize_environment

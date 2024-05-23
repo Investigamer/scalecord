@@ -8,8 +8,7 @@ import logging
 from pathlib import Path
 
 # Third Party Imports
-from omnitils.files_data import load_data_file
-from omnitils.folders import mkdir_full_perms
+from omnitils.files import load_data_file, mkdir_full_perms
 
 # Local Imports
 from scalecord.types.models import ModelManifestMap, ModelManifestMapDefaults, ScalecordModel, OMDBTag

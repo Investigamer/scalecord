@@ -16,7 +16,7 @@ from discord import Attachment, File, app_commands
 from discord.ext import commands
 from discord.ext.commands import Bot
 from discord.interactions import Interaction
-from omnitils.properties import default_property
+from omnitils.properties import default_prop
 
 # Local Imports
 from scalecord._constants import AppEnvironment
@@ -40,11 +40,11 @@ class UpscaleCog(commands.Cog):
             model_name=self.model_autocomplete
         )(self.upscale_attached_image)
 
-    @default_property
+    @default_prop
     def model_names(self) -> list[str]:
         return sorted([k for k in self._models.keys()])
 
-    @default_property
+    @default_prop
     def render_lock(self) -> Lock:
         return Lock()
 

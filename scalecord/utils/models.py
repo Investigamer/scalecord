@@ -11,10 +11,8 @@ from typing import Optional
 # Third Party Imports
 import requests
 import yarl
-from omnitils.download import download_file_with_callback
-from omnitils.files import get_sha256
-from omnitils.files_data import dump_data_file, load_data_file
-from omnitils.folders import mkdir_full_perms
+from omnitils.fetch import download_file
+from omnitils.files import get_sha256, dump_data_file, load_data_file, mkdir_full_perms
 from tqdm import tqdm
 
 # Local Imports
@@ -292,7 +290,7 @@ def download_model(url: str, path: Path, chunk_size: int = 1024 * 1024 * 8) -> N
 
     # Download the file
     try:
-        download_file_with_callback(
+        download_file(
             url=url,
             path=path,
             callback=_update_progress,
